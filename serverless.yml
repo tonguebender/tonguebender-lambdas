@@ -34,12 +34,13 @@ functions:
       - http: ANY /
       - http: 'ANY {proxy+}'
 
+  sqsIncomingMessages:
+    handler: handler.sqsIncomingMessages
+    events:
+      - sqs: arn:aws:sqs:eu-west-2:035313854880:incoming-messages
+
 #  sqsSendMessage:
 #    handler: handler.sqsSendMessage
 #    events:
 #      - sqs: arn:aws:sqs:eu-west-2:035313854880:msg
 
-#  sqsReceiveMessage:
-#    handler: handler.sqsReceiveMessage
-#    events:
-#      - sqs: arn:aws:sqs:eu-west-2:035313854880:msg

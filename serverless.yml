@@ -39,8 +39,7 @@ functions:
     events:
       - sqs: arn:aws:sqs:eu-west-2:035313854880:incoming-messages
 
-#  sqsSendMessage:
-#    handler: handler.sqsSendMessage
-#    events:
-#      - sqs: arn:aws:sqs:eu-west-2:035313854880:msg
-
+  sqsOutgoingMessages:
+    handler: handler.sqsOutgoingMessages
+    events:
+      - sqs: arn:aws:sqs:eu-west-2:035313854880:outgoing-messages

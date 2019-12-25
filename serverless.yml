@@ -1,0 +1,45 @@
+service: tongue-bender
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: eu-west-2
+  environment:
+    TELEGRAM_TOKEN: ${ssm:telegram_key}
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:SendMessage'
+        - 'sqs:GetQueueUrl'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:incoming-messages'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:ListQueues'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:incoming-messages:*'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:SendMessage'
+        - 'sqs:GetQueueUrl'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:ListQueues'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages:*'
+
+functions:
+  hookTelegram:
+    handler: handler.hookTelegram
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+#  sqsSendMessage:
+#    handler: handler.sqsSendMessage
+#    events:
+#      - sqs: arn:aws:sqs:eu-west-2:035313854880:msg
+
+#  sqsReceiveMessage:
+#    handler: handler.sqsReceiveMessage
+#    events:
+#      - sqs: arn:aws:sqs:eu-west-2:035313854880:msg

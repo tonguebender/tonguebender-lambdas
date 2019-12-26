@@ -26,6 +26,15 @@ provider:
       Action:
         - 'sqs:ListQueues'
       Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages:*'
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/users'
 
 functions:
   hookTelegram:

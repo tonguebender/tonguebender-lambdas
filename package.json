@@ -18,7 +18,8 @@
   "dependencies": {
     "aws-sdk": "^2.596.0",
     "serverless": "^1.60.4",
-    "telegraf": "^3.34.1"
+    "telegraf": "^3.34.1",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "prettier": "^1.19.1"

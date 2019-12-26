@@ -35,6 +35,15 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/users'
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/courses'
 
 functions:
   hookTelegram:
@@ -52,3 +61,8 @@ functions:
     handler: handler.sqsOutgoingMessages
     events:
       - sqs: arn:aws:sqs:eu-west-2:035313854880:outgoing-messages
+
+  tick:
+    handler: handler.tick
+    events:
+      - schedule: rate(1 minute)

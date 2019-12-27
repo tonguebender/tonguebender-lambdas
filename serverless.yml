@@ -1,5 +1,9 @@
 service: tongue-bender
 
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -45,6 +49,52 @@ provider:
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/courses'
 
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 3001
+      migrate: true
+      seed: true
+    seed:
+      domain:
+        sources:
+          - table: users
+            sources: [./data/users.json]
+          - table: courses
+            sources: [./data/courses.json]
+
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: users
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    coursesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: courses
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
 functions:
   hookTelegram:
     handler: handler.hookTelegram
@@ -65,4 +115,4 @@ functions:
   tick:
     handler: handler.tick
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(10 minutes)

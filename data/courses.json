@@ -1,0 +1,17 @@
+[
+  {
+    "description": "sample course",
+    "id": "sample",
+    "items": [
+      {
+        "type": "text",
+        "text": "item1"
+      },
+      {
+        "type": "text",
+        "text": "item1"
+      }
+    ],
+    "title": "sample"
+  }
+]

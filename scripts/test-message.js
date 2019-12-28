@@ -3,9 +3,7 @@ const axios = require('axios');
 const HOST = 'http://localhost:3000';
 const PATH = '/v2/functions/tongue-bender-dev-sqsIncomingMessages/invocations';
 
-const text = '/start';
-
-const message = {
+const getMessage = text => ({
   agent: 'telegram',
   chatId: 126498435,
   text,
@@ -26,18 +24,25 @@ const message = {
       text: 'blah',
     },
   },
-};
+});
 
-async function test() {
+const sendMessage = text => {
   console.log('SEND:', text);
 
-  await axios.post(`${HOST}${PATH}`, {
+  return axios.post(`${HOST}${PATH}`, {
     Records: [
       {
-        body: JSON.stringify(message),
+        body: JSON.stringify(getMessage(text)),
       },
     ],
   });
+};
+
+async function test() {
+  console.log('START');
+
+  await sendMessage('/start');
+  await sendMessage('next');
 }
 
 test();

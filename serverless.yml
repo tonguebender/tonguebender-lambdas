@@ -65,7 +65,7 @@ custom:
           - table: courses
             sources: [./data/courses.json]
 
-
+# remove _ when running offline
 resources:
   Resources:
     usersTable:

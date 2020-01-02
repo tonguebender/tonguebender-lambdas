@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Sample Quiz",
+    "description": "sample quiz",
+    "id": "sample-quiz",
+    "items": [
+      {
+        "type": "text",
+        "text": "This is a sample quiz"
+      },
+      {
+        "type": "question",
+        "text": "What's 2*2?",
+        "answers": ["4"]
+      },
+      {
+        "type": "question",
+        "text": "What's after D?",
+        "answers": ["e"]
+      }
+    ]
+  }
+]

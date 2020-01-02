@@ -25,11 +25,20 @@ provider:
       Action:
         - 'sqs:SendMessage'
         - 'sqs:GetQueueUrl'
-      Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages.fifo'
     - Effect: 'Allow'
       Action:
         - 'sqs:ListQueues'
-      Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages:*'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages.fifo:*'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:SendMessage'
+        - 'sqs:GetQueueUrl'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:short-delay-tasks'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:ListQueues'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:short-delay-tasks'
     - Effect: Allow
       Action:
         - dynamodb:Query
@@ -48,6 +57,15 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/courses'
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/quizzes'
 
 custom:
   dynamodb:
@@ -64,6 +82,8 @@ custom:
             sources: [./data/users.json]
           - table: courses
             sources: [./data/courses.json]
+          - table: quizzes
+            sources: [./data/quizzes.json]
 
 # remove _ when running offline
 _resources:
@@ -94,6 +114,19 @@ _resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    quizzesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: quizzes
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 functions:
   hookTelegram:
@@ -110,7 +143,12 @@ functions:
   sqsOutgoingMessages:
     handler: handler.sqsOutgoingMessages
     events:
-      - sqs: arn:aws:sqs:eu-west-2:035313854880:outgoing-messages
+      - sqs: arn:aws:sqs:eu-west-2:035313854880:outgoing-messages.fifo
+
+  sqsShortDelayTasks:
+    handler: handler.sqsShortDelayTasks
+    events:
+      - sqs: arn:aws:sqs:eu-west-2:035313854880:short-delay-tasks
 
   tick:
     handler: handler.tick

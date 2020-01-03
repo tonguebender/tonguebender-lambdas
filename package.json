@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prettier": "prettier --write \"lib/**/*.js\"",
-    "deploy": "serverless deploy -v"
+    "deploy": "serverless deploy -v",
+    "offline": "serverless offline start"
   },
   "repository": {
     "type": "git",

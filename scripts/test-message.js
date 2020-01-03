@@ -2,6 +2,7 @@ const axios = require('axios');
 
 const HOST = 'http://localhost:3000';
 const SEND_MSG_PATH = '/v2/functions/tongue-bender-dev-sqsIncomingMessages/invocations';
+const OUTGOING_MSG_PATH = '/v2/functions/tongue-bender-dev-sqsOutgoingMessages/invocations';
 const NEXT_TASK_PATH = '/v2/functions/tongue-bender-dev-sqsShortDelayTasks/invocations';
 const TICK_PATH = '/v2/functions/tongue-bender-dev-tick/invocations';
 
@@ -40,6 +41,24 @@ const sendMessage = (text) => {
   });
 };
 
+const sendTelegramMessage = (text, buttons) => {
+  console.log('Telegram:', text);
+
+  return axios.post(`${HOST}${OUTGOING_MSG_PATH}`, {
+    Records: [
+      {
+        body: JSON.stringify({
+          chatId: 126498435,
+          text,
+          data: {
+            buttons,
+          },
+        }),
+      },
+    ],
+  });
+};
+
 const nextTask = () => {
   console.log('NEXT_TASK');
 
@@ -63,16 +82,17 @@ const tick = () => {
 async function test() {
   console.log('START');
 
-  await sendMessage('/start');
-  await nextTask();
-  await sendMessage('quiz');
-  await nextTask();
-  await nextTask();
-  await sendMessage('4');
-  await nextTask();
-  await sendMessage('E');
-  await nextTask();
-  await nextTask();
+  sendTelegramMessage('qwe', ['next', 'blah'] );
+  // await sendMessage('/start');
+  // await nextTask();
+  // await sendMessage('quiz');
+  // await nextTask();
+  // await nextTask();
+  // await sendMessage('4');
+  // await nextTask();
+  // await sendMessage('E');
+  // await nextTask();
+  // await nextTask();
 }
 
 test();

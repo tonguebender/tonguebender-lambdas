@@ -11,7 +11,8 @@
       {
         "type": "question",
         "text": "What's 2*2?",
-        "answers": ["4"]
+        "answers": ["4"],
+        "options": ["4", "5", "1", "12"]
       },
       {
         "type": "question",

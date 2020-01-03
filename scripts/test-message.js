@@ -82,17 +82,27 @@ const tick = () => {
 async function test() {
   console.log('START');
 
-  sendTelegramMessage('qwe', ['next', 'blah'] );
-  // await sendMessage('/start');
-  // await nextTask();
-  // await sendMessage('quiz');
-  // await nextTask();
-  // await nextTask();
-  // await sendMessage('4');
-  // await nextTask();
-  // await sendMessage('E');
+  // sendTelegramMessage('qwe', ['next', 'blah'] );
+
+  await sendMessage('/start');
+
   // await nextTask();
   // await nextTask();
+  // await nextTask();
+  // await nextTask();
+
+  await sendMessage('quiz');
+  await nextTask();
+  await nextTask();
+  await nextTask();
+  await sendMessage('4');
+  await nextTask();
+  await sendMessage('E');
+  await nextTask();
+  await nextTask();
+  await nextTask();
+  await nextTask();
+  await nextTask();
 }
 
 test();

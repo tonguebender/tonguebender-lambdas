@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+import * as AWS from 'aws-sdk';
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
@@ -14,7 +14,20 @@ const docClient = new AWS.DynamoDB.DocumentClient(
     : {},
 );
 
-const getQuiz = async (id) => {
+export interface IQuizItem {
+  type: string;
+  text?: string;
+  answers?: string[];
+  options?: string[];
+}
+export interface IQuiz {
+  title: string;
+  description: string;
+  id: string;
+  items: IQuizItem[];
+}
+
+export const getQuiz = async (id: string): Promise<IQuiz> => {
   const doc = await docClient
     .get({
       TableName: 'quizzes',
@@ -22,20 +35,15 @@ const getQuiz = async (id) => {
     })
     .promise();
 
-  return doc.Item;
+  return doc.Item as IQuiz;
 };
 
-const getQuizzes = async () => {
+export const getQuizzes = async (): Promise<IQuiz[]> => {
   const doc = await docClient
     .scan({
       TableName: 'quizzes',
     })
     .promise();
 
-  return doc.Items;
-};
-
-module.exports = {
-  getQuiz,
-  getQuizzes,
+  return doc.Items as IQuiz[];
 };

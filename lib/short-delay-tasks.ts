@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+import * as AWS from 'aws-sdk';
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
@@ -9,7 +9,7 @@ const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
 
 const QUEUE_URL = 'https://sqs.eu-west-2.amazonaws.com/035313854880/short-delay-tasks';
 
-const putTask = ({ userId, data = {} }) => {
+export const putTask = ({ userId, data = {} }: { userId: string; data?: {} }): Promise<any> => {
   if (IS_OFFLINE) {
     console.log(`TASK to ${userId}`);
     return Promise.resolve();
@@ -29,8 +29,4 @@ const putTask = ({ userId, data = {} }) => {
       QueueUrl: QUEUE_URL,
     })
     .promise();
-};
-
-module.exports = {
-  putTask,
 };

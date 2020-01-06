@@ -1,26 +1,44 @@
-const { updateUserTasks } = require('./users');
-const { getCourse } = require('./courses');
-const { getQuiz } = require('./quizzes');
-const { putMessage } = require('./messages');
-const { putTask } = require('./short-delay-tasks');
+import { updateUserTasks, User } from './users';
+import { getCourse } from './courses';
+import { getQuiz, IQuizItem } from './quizzes';
+import { putMessage } from './messages';
+import { putTask } from './short-delay-tasks';
 
-const TASKS = {
-  START_COURSE: 'START_COURSE',
-  COURSE_ITEM: 'COURSE_ITEM',
-  STOP_COURSE: 'STOP_COURSE',
-  START_QUIZ: 'START_QUIZ',
-  QUIZ_ITEM: 'QUIZ_ITEM',
-  QUIZ_CHECK_ANSWER: 'QUIZ_CHECK_ANSWER',
-  STOP_QUIZ: 'STOP_QUIZ',
-};
+export interface ITask {
+  type: string;
+}
+export interface ICourseTask extends ITask {
+  type: TASKS.COURSE_ITEM | TASKS.START_COURSE | TASKS.STOP_COURSE;
+  courseId: string;
+  pos: number;
+}
+export interface IQuizTask extends ITask {
+  type: TASKS.START_QUIZ | TASKS.QUIZ_ITEM | TASKS.QUIZ_CHECK_ANSWER | TASKS.STOP_QUIZ;
+  quizId: string;
+  quizItems: IQuizItem[];
+  correct: number;
+  incorrect: number;
+}
+export type IUserTask = ICourseTask | IQuizTask | ITask;
 
-const executeNextTask = async (user, message) => {
-  const currentTask = user.tasks && user.tasks[0];
+export enum TASKS {
+  START_COURSE = 'START_COURSE',
+  COURSE_ITEM = 'COURSE_ITEM',
+  STOP_COURSE = 'STOP_COURSE',
+  START_QUIZ = 'START_QUIZ',
+  QUIZ_ITEM = 'QUIZ_ITEM',
+  QUIZ_CHECK_ANSWER = 'QUIZ_CHECK_ANSWER',
+  STOP_QUIZ = 'STOP_QUIZ',
+}
+
+const executeNextTask = async (user: User, message: string) => {
+  const currentTask: IUserTask = user.tasks && user.tasks[0];
   const taskType = currentTask && currentTask.type;
 
   switch (taskType) {
     case TASKS.START_COURSE: {
-      const course = await getCourse(currentTask.courseId);
+      const { courseId } = currentTask as ICourseTask;
+      const course = await getCourse(courseId);
       const response = `Started course: ${course.title}`;
 
       await updateUserTasks({
@@ -28,7 +46,7 @@ const executeNextTask = async (user, message) => {
         tasks: [
           {
             type: TASKS.COURSE_ITEM,
-            courseId: currentTask.courseId,
+            courseId: (currentTask as ICourseTask).courseId,
             pos: 0,
           },
           ...user.tasks.splice(1),
@@ -38,9 +56,10 @@ const executeNextTask = async (user, message) => {
       return putMessage({ chatId: user.chatId, text: response });
     }
     case TASKS.COURSE_ITEM: {
-      const course = await getCourse(currentTask.courseId);
-      const item = course.items[currentTask.pos];
-      const hasMore = course.items.length > currentTask.pos + 1;
+      const { courseId, pos } = currentTask as ICourseTask;
+      const course = await getCourse(courseId);
+      const item = course.items[pos];
+      const hasMore = course.items.length > pos + 1;
 
       if (hasMore) {
         await updateUserTasks({
@@ -49,8 +68,8 @@ const executeNextTask = async (user, message) => {
             ...user.tasks.splice(1),
             {
               type: TASKS.COURSE_ITEM,
-              courseId: currentTask.courseId,
-              pos: currentTask.pos + 1,
+              courseId: courseId,
+              pos: pos + 1,
             },
           ],
         });
@@ -60,7 +79,7 @@ const executeNextTask = async (user, message) => {
           tasks: [
             {
               type: TASKS.STOP_COURSE,
-              courseId: currentTask.courseId,
+              courseId: courseId,
             },
             ...user.tasks.splice(1),
           ],
@@ -72,7 +91,8 @@ const executeNextTask = async (user, message) => {
       return putMessage({ chatId: user.chatId, text: item.text });
     }
     case TASKS.STOP_COURSE: {
-      const course = await getCourse(currentTask.courseId);
+      const { courseId } = currentTask as ICourseTask;
+      const course = await getCourse(courseId);
       const response = `Finished course: ${course.title}`;
 
       await updateUserTasks({
@@ -83,7 +103,8 @@ const executeNextTask = async (user, message) => {
       return putMessage({ chatId: user.chatId, text: response });
     }
     case TASKS.START_QUIZ: {
-      const quiz = await getQuiz(currentTask.quizId);
+      const { quizId } = currentTask as IQuizTask;
+      const quiz = await getQuiz(quizId);
       const response = `Started quiz: ${quiz.title}`;
 
       await updateUserTasks({
@@ -91,7 +112,7 @@ const executeNextTask = async (user, message) => {
         tasks: [
           {
             type: TASKS.QUIZ_ITEM,
-            quizId: currentTask.quizId,
+            quizId: quizId,
             quizItems: [...quiz.items, { type: 'show-results' }],
             correct: 0,
             incorrect: 0,
@@ -105,7 +126,8 @@ const executeNextTask = async (user, message) => {
       return putMessage({ chatId: user.chatId, text: response });
     }
     case TASKS.STOP_QUIZ: {
-      const quiz = await getQuiz(currentTask.quizId);
+      const { quizId } = currentTask as IQuizTask;
+      const quiz = await getQuiz(quizId);
       const response = `Stopped quiz: ${quiz.title}`;
 
       await updateUserTasks({
@@ -116,7 +138,8 @@ const executeNextTask = async (user, message) => {
       return putMessage({ chatId: user.chatId, text: response });
     }
     case TASKS.QUIZ_ITEM: {
-      const currentItem = currentTask.quizItems[0];
+      const { quizId, quizItems, correct, incorrect } = currentTask as IQuizTask;
+      const currentItem = quizItems[0];
       let response;
       let buttons;
 
@@ -130,16 +153,16 @@ const executeNextTask = async (user, message) => {
           tasks: [
             {
               type: TASKS.QUIZ_CHECK_ANSWER,
-              quizId: currentTask.quizId,
-              quizItems: currentTask.quizItems,
-              correct: currentTask.correct,
-              incorrect: currentTask.incorrect,
+              quizId,
+              quizItems,
+              correct,
+              incorrect,
             },
             ...user.tasks.splice(1),
           ],
         });
       } else if (currentItem.type === 'show-results') {
-        let { correct = 0, incorrect = 0 } = currentTask;
+        const { correct = 0, incorrect = 0 } = currentTask as IQuizTask;
         response = `Result: ${correct}/${correct + incorrect}`;
 
         await updateUserTasks({
@@ -154,10 +177,10 @@ const executeNextTask = async (user, message) => {
           tasks: [
             {
               type: TASKS.QUIZ_ITEM,
-              quizId: currentTask.quizId,
-              quizItems: [...currentTask.quizItems.splice(1)],
-              correct: currentTask.correct,
-              incorrect: currentTask.incorrect,
+              quizId: quizId,
+              quizItems: [...quizItems.splice(1)],
+              correct: correct,
+              incorrect: incorrect,
             },
             ...user.tasks.splice(1),
           ],
@@ -166,23 +189,26 @@ const executeNextTask = async (user, message) => {
         await putTask({ userId: user.id });
       }
 
-      return putMessage({ chatId: user.chatId, text: response, data: { buttons } });
+      if (response) {
+        return putMessage({ chatId: user.chatId, text: response, data: { buttons } });
+      }
     }
     case TASKS.QUIZ_CHECK_ANSWER: {
-      const currentQuestion = currentTask.quizItems[0];
-      let { correct = 0, incorrect = 0 } = currentTask;
+      const { quizId, quizItems } = currentTask as IQuizTask;
+      const currentQuestion = quizItems[0];
+      let { correct = 0, incorrect = 0 } = currentTask as IQuizTask;
       let response;
 
       if (message) {
-        if (currentQuestion.answers.some((i) => i.toLowerCase() === message)) {
+        if (currentQuestion.answers && currentQuestion.answers.some((i) => i.toLowerCase() === message)) {
           response = `👍`;
           correct++;
         } else {
-          response = `👎\n\nAnswer: ${currentQuestion.answers.join(', ')}`;
+          response = `👎\n\nAnswer: ${currentQuestion.answers && currentQuestion.answers.join(', ')}`;
           incorrect++;
         }
       } else {
-        response = `Answer: ${currentQuestion.answers.join(', ')}`;
+        response = `Answer: ${currentQuestion.answers && currentQuestion.answers.join(', ')}`;
         incorrect++;
       }
 
@@ -191,8 +217,8 @@ const executeNextTask = async (user, message) => {
         tasks: [
           {
             type: TASKS.QUIZ_ITEM,
-            quizId: currentTask.quizId,
-            quizItems: [...currentTask.quizItems.splice(1)],
+            quizId: quizId,
+            quizItems: [...quizItems.splice(1)],
             correct,
             incorrect,
           },

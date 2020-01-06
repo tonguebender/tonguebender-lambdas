@@ -1,53 +1,60 @@
-const { createUser, getUser, updateUserTasks } = require('../users');
-const { getQuizzes } = require('../quizzes');
+import { SQSEvent, SQSRecord } from 'aws-lambda';
+import { putMessage } from '../messages';
+import { getQuizzes } from '../quizzes';
+import { putTask } from '../short-delay-tasks';
+import { createUser, getUser, updateUserTasks } from '../users';
+
 const { TASKS, executeNextTask } = require('../tasks');
-const { putMessage } = require('../messages');
-const { putTask } = require('../short-delay-tasks');
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
-/*
-Message:
+type ValueOf<T> = T[keyof T];
 
-{
-  agent: 'telegram',
-  chatId: 126498435,
-  text: 'blah',
+interface IMessage {
+  agent: string;
+  chatId: number;
+  text: string;
   data: {
-    update_id: 399068016,
+    update_id: number;
     message: {
-      message_id: 4871,
+      message_id: number;
       from: {
-        id: 126498435,
-        is_bot: false,
-        first_name: 'Sergey',
-        last_name: 'Maximov',
-        username: 'dosyara',
-        language_code: 'en',
-      },
-      chat: { id: 126498435, first_name: 'Sergey', last_name: 'Maximov', username: 'dosyara', type: 'private' },
-      date: 1577294713,
-      text: 'blah',
-    },
-  },
+        id: number;
+        is_bot: boolean;
+        first_name: string;
+        last_name: string;
+        username: string;
+        language_code: string;
+      };
+      chat: { id: number; first_name: string; last_name: string; username: string; type: string };
+      date: number;
+      text: string;
+    };
+  };
 }
- */
 
-const ACTIONS = {
-  START: 'START',
-  SAY_HI: 'SAY_HI',
-  NEXT: 'NEXT',
-  START_QUIZ: 'START_QUIZ',
-  REPLY_TO: 'REPLY_TO',
+interface IAction {
+  type: ValueOf<ACTIONS>;
+  chatId: number;
+  message?: string;
+  messageData?: any;
+}
 
-  // todo:
-  STOP: 'STOP',
-  DEFINE: 'DEFINE',
-  SYNONYMS: 'SYNONYMS',
-  IPA: 'IPA',
-};
+enum ACTIONS {
+  START = 'START',
+  SAY_HI = 'SAY_HI',
+  NEXT = 'NEXT',
+  START_QUIZ = 'START_QUIZ',
+  REPLY_TO = 'REPLY_TO',
 
-const processAction = async (action = {}) => {
+  // todo
+  STOP = 'STOP',
+  DEFINE = 'DEFINE',
+  SYNONYMS = 'SYNONYMS',
+  IPA = 'IPA',
+}
+
+const processAction = async (action: IAction): Promise<any> => {
   const { type } = action;
 
   switch (type) {
@@ -121,7 +128,7 @@ const processAction = async (action = {}) => {
   }
 };
 
-const convertMessageToAction = ({ text = '', chatId, data }) => {
+const convertMessageToAction = ({ text = '', chatId, data }: IMessage): IAction => {
   const message = text.toLowerCase().trim();
 
   switch (message) {
@@ -155,10 +162,10 @@ const convertMessageToAction = ({ text = '', chatId, data }) => {
   }
 };
 
-module.exports = async (event) => {
+export default async (event: SQSEvent) => {
   await Promise.all(
-    event.Records.map(async (msg) => {
-      const data = JSON.parse(msg.body);
+    event.Records.map(async (msg: SQSRecord) => {
+      const data: IMessage = JSON.parse(msg.body);
 
       if (IS_OFFLINE) {
         console.log(`MESSAGE from ${data.chatId}: ${data.text}`);

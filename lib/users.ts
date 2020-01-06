@@ -1,4 +1,5 @@
-const AWS = require('aws-sdk');
+import * as AWS from 'aws-sdk';
+import { IUserTask } from './tasks';
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
@@ -14,7 +15,15 @@ const docClient = new AWS.DynamoDB.DocumentClient(
     : {},
 );
 
-const getUser = async (id) => {
+export interface User {
+  id: string;
+  name: string;
+  chatId: number;
+  tasks: IUserTask[];
+  nextTaskAt: number;
+}
+
+export const getUser = async (id: string): Promise<User> => {
   const doc = await docClient
     .get({
       TableName: 'users',
@@ -22,10 +31,10 @@ const getUser = async (id) => {
     })
     .promise();
 
-  return doc.Item;
+  return doc.Item as User;
 };
 
-const createUser = async ({ name, chatId }) => {
+export const createUser = async ({ name, chatId }: { name: string; chatId: number }) => {
   const id = `telegram_${chatId}`;
 
   if (await getUser(id)) {
@@ -54,7 +63,7 @@ const createUser = async ({ name, chatId }) => {
     .promise();
 };
 
-const getUsersForNewTask = async (time) => {
+export const getUsersForNewTask = async (time: number): Promise<User[]> => {
   const data = await docClient
     .scan({
       ExpressionAttributeValues: {
@@ -65,10 +74,10 @@ const getUsersForNewTask = async (time) => {
     })
     .promise();
 
-  return data.Items;
+  return data.Items as User[];
 };
 
-const updateUserTasks = async ({ id, tasks }) => {
+export const updateUserTasks = async ({ id, tasks }: { id: string; tasks: IUserTask[] }) => {
   return await docClient
     .update({
       Key: { id },
@@ -81,7 +90,7 @@ const updateUserTasks = async ({ id, tasks }) => {
     .promise();
 };
 
-const updateUserNextTaskAt = async ({ id, nextTaskAt }) => {
+export const updateUserNextTaskAt = async ({ id, nextTaskAt }: { id: string; nextTaskAt: number }) => {
   return await docClient
     .update({
       Key: { id },
@@ -92,12 +101,4 @@ const updateUserNextTaskAt = async ({ id, nextTaskAt }) => {
       TableName: 'users',
     })
     .promise();
-};
-
-module.exports = {
-  createUser,
-  getUser,
-  getUsersForNewTask,
-  updateUserTasks,
-  updateUserNextTaskAt,
 };

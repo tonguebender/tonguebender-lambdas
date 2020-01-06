@@ -1,9 +1,10 @@
-const { getUser } = require('../users');
+import { SQSEvent, SQSRecord } from 'aws-lambda';
+import { getUser } from '../users';
 const { executeNextTask } = require('../tasks');
 
-module.exports = async (event) => {
+export default async (event: SQSEvent) => {
   await Promise.all(
-    event.Records.map(async (msg) => {
+    event.Records.map(async (msg: SQSRecord) => {
       const data = JSON.parse(msg.body);
       const user = await getUser(data.userId);
 

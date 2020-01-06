@@ -1,7 +1,7 @@
-const { getUsersForNewTask, updateUserNextTaskAt } = require('../users');
+import { getUsersForNewTask, updateUserNextTaskAt } from '../users';
 const { executeNextTask } = require('../tasks');
 
-const hourRanges = [
+const hourRanges: [number, number][] = [
   [9, 10],
   [12, 13],
   [18, 19],
@@ -9,8 +9,8 @@ const hourRanges = [
 
 const messageDelay = 10 * 60 * 1000;
 
-const isInBetween = (hour, [from, to]) => hour >= from && hour < to;
-const getNextAt = (date) => {
+const isInBetween = (hour: number, [from, to]: [number, number]): boolean => hour >= from && hour < to;
+const getNextAt = (date: Date) => {
   let next = new Date(date.getTime() + messageDelay);
   let nextHour = next.getHours();
 
@@ -33,7 +33,7 @@ const getNextAt = (date) => {
   return next;
 };
 
-module.exports = async (event) => {
+export default async () => {
   const users = (await getUsersForNewTask(Date.now())) || [];
 
   return await Promise.all(

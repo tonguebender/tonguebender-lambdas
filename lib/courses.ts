@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+import * as AWS from 'aws-sdk';
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
@@ -14,7 +14,17 @@ const docClient = new AWS.DynamoDB.DocumentClient(
     : {},
 );
 
-const getCourse = async (id) => {
+interface ICourse {
+  title: string;
+  description: string;
+  id: string;
+  items: Array<{
+    type: string;
+    text: string;
+  }>;
+}
+
+export const getCourse = async (id: string): Promise<ICourse> => {
   const doc = await docClient
     .get({
       TableName: 'courses',
@@ -22,9 +32,5 @@ const getCourse = async (id) => {
     })
     .promise();
 
-  return doc.Item;
-};
-
-module.exports = {
-  getCourse,
+  return doc.Item as ICourse;
 };

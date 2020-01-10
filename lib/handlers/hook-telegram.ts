@@ -14,7 +14,7 @@ const INCOMING_MESSAGES_QUEUE_URL = 'https://sqs.eu-west-2.amazonaws.com/0353138
 const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN || '');
 
-bot.on('text', (ctx) => ctx.reply(`hook echo: ${ctx.message && ctx.message.text}`));
+bot.on('text', (ctx) => ctx.reply(`hook echo: ${ctx?.message?.text}`));
 
 export default async (event: ITelegramHookRequest) => {
   if (event.body) {

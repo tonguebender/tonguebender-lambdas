@@ -1,4 +1,5 @@
 import * as AWS from 'aws-sdk';
+import { IOutgoingMessage } from './handlers/sqs-outgoing-messages';
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
@@ -9,7 +10,9 @@ const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
 
 const OUTGOING_MESSAGES_QUEUE_URL = 'https://sqs.eu-west-2.amazonaws.com/035313854880/outgoing-messages.fifo';
 
-export const putMessage = ({ chatId, text, data = {} }: { chatId: number; text: string; data?: {} }) => {
+export const putMessage = ({ chatId, text, data = {} }: IOutgoingMessage) => {
+  if (!chatId || !text) return;
+
   if (IS_OFFLINE) {
     console.log(`MESSAGE to ${chatId}: ${text}`);
     return Promise.resolve();

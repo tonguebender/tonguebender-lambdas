@@ -3,6 +3,7 @@ import { putMessage } from '../messages';
 import { getQuizzes } from '../quizzes';
 import { putTask } from '../short-delay-tasks';
 import { createUser, getUser, updateUserTasks } from '../users';
+import { getDefinition } from '../tongues';
 
 const { TASKS, executeNextTask } = require('../tasks');
 
@@ -46,10 +47,10 @@ enum ACTIONS {
   NEXT = 'NEXT',
   START_QUIZ = 'START_QUIZ',
   REPLY_TO = 'REPLY_TO',
+  DEFINE = 'DEFINE',
 
   // todo
   STOP = 'STOP',
-  DEFINE = 'DEFINE',
   SYNONYMS = 'SYNONYMS',
   IPA = 'IPA',
 }
@@ -60,7 +61,7 @@ const processAction = async (action: IAction): Promise<any> => {
   switch (type) {
     case ACTIONS.START: {
       const { chatId, messageData } = action;
-      const from = (messageData.message && messageData.message.from) || {};
+      const from = messageData?.message?.from || {};
       const name = from.first_name || from.last_name || from.username || 'user';
       const response = `Hi ${name}`;
 
@@ -108,11 +109,31 @@ const processAction = async (action: IAction): Promise<any> => {
 
       return putTask({ userId: user.id });
     }
+    case ACTIONS.DEFINE: {
+      const { chatId, message = '' } = action;
+      const def = await getDefinition(message);
+      const defs = def.def;
+      let response;
+
+      if (defs && defs.length) {
+        response = `**${def.pk}** _[${def.ipa}]_\n${defs
+          .map((d) => `- (${d.speech_part}) ${d.def}${d.example ? `\n_${d.example}_` : ''}`)
+          .join('\n')}`;
+      } else {
+        response = 'Not found';
+      }
+
+      return putMessage({
+        chatId,
+        text: response,
+      });
+    }
     case ACTIONS.REPLY_TO: {
       const { chatId, message } = action;
       const user = await getUser(`telegram_${chatId}`);
-      const currentTask = user.tasks && user.tasks[0];
-      const type = currentTask && currentTask.type;
+
+      const currentTask = user?.tasks[0];
+      const type = currentTask?.type;
 
       if (type === TASKS.QUIZ_CHECK_ANSWER) {
         return await executeNextTask(user, message);
@@ -130,8 +151,9 @@ const processAction = async (action: IAction): Promise<any> => {
 
 const convertMessageToAction = ({ text = '', chatId, data }: IMessage): IAction => {
   const message = text.toLowerCase().trim();
+  const parts = message.split(' ');
 
-  switch (message) {
+  switch (parts[0]) {
     case '/start':
       return {
         type: ACTIONS.START,
@@ -152,6 +174,12 @@ const convertMessageToAction = ({ text = '', chatId, data }: IMessage): IAction 
       return {
         type: ACTIONS.START_QUIZ,
         chatId,
+      };
+    case 'define':
+      return {
+        type: ACTIONS.DEFINE,
+        chatId,
+        message: parts[1],
       };
     default:
       return {

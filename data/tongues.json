@@ -1,0 +1,30 @@
+[
+  {
+    "def": [
+      {
+        "def": "regarded with deep or rapturous love (especially as if for a god)",
+        "example": "adored grandchildren",
+        "speech_part": "adjective",
+        "synonyms": [
+          "idolized",
+          "idolised",
+          "worshipped"
+        ],
+        "word": "adored"
+      }
+    ],
+    "pk": "adored",
+    "sk": "en-def"
+  },
+  {
+    "def": [
+      {
+        "def": "the excretory opening at the end of the alimentary canal",
+        "speech_part": "noun",
+        "word": "anus"
+      }
+    ],
+    "pk": "anus",
+    "sk": "en-def"
+  }
+]

@@ -103,6 +103,7 @@ async function test() {
   await nextTask();
   await nextTask();
   await nextTask();
+  await sendMessage('define anus');
 }
 
 test();

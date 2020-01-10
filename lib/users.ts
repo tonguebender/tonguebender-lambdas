@@ -1,5 +1,5 @@
 import * as AWS from 'aws-sdk';
-import { IUserTask } from './tasks';
+import { IUserTask, TASKS } from './tasks';
 
 const IS_OFFLINE = process.env.IS_OFFLINE;
 
@@ -47,7 +47,7 @@ export const createUser = async ({ name, chatId }: { name: string; chatId: numbe
     chatId,
     tasks: [
       {
-        type: 'COURSE_ITEM',
+        type: TASKS.COURSE_ITEM,
         courseId: 'sample-course',
         pos: 0,
       },
@@ -71,6 +71,7 @@ export const getUsersForNewTask = async (time: number): Promise<User[]> => {
       },
       FilterExpression: 'nextTaskAt < :d',
       TableName: 'users',
+      Limit: 100,
     })
     .promise();
 

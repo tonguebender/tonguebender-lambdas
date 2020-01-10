@@ -1,5 +1,5 @@
 import hookTelegram from './hook-telegram';
-import sqsIncomingMessages from './sqs-incomming-messages';
+import sqsIncomingMessages from './sqs-incoming-messages';
 import sqsOutgoingMessages from './sqs-outgoing-messages';
 import sqsShortDelayTasks from './sqs-short-delay-tasks';
 import tick from './tick';

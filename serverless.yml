@@ -67,6 +67,15 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/quizzes'
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:035313854880:table/tongues'
 
 custom:
   dynamodb:
@@ -85,6 +94,8 @@ custom:
             sources: [./data/courses.json]
           - table: quizzes
             sources: [./data/quizzes.json]
+          - table: tongues
+            sources: [./data/tongues.json]
 
 # remove _ when running offline
 _resources:
@@ -125,6 +136,23 @@ _resources:
         KeySchema:
           - AttributeName: id
             KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    tonguesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: tongues
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1

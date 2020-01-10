@@ -32,8 +32,8 @@ export enum TASKS {
 }
 
 const executeNextTask = async (user: User, message: string) => {
-  const currentTask: IUserTask = user.tasks && user.tasks[0];
-  const taskType = currentTask && currentTask.type;
+  const currentTask: IUserTask = user.tasks[0];
+  const taskType = currentTask?.type;
 
   switch (taskType) {
     case TASKS.START_COURSE: {
@@ -189,9 +189,7 @@ const executeNextTask = async (user: User, message: string) => {
         await putTask({ userId: user.id });
       }
 
-      if (response) {
-        return putMessage({ chatId: user.chatId, text: response, data: { buttons } });
-      }
+      return putMessage({ chatId: user.chatId, text: response || '', data: { buttons } });
     }
     case TASKS.QUIZ_CHECK_ANSWER: {
       const { quizId, quizItems } = currentTask as IQuizTask;
@@ -200,15 +198,15 @@ const executeNextTask = async (user: User, message: string) => {
       let response;
 
       if (message) {
-        if (currentQuestion.answers && currentQuestion.answers.some((i) => i.toLowerCase() === message)) {
+        if (currentQuestion.answers?.some((i) => i.toLowerCase() === message)) {
           response = `👍`;
           correct++;
         } else {
-          response = `👎\n\nAnswer: ${currentQuestion.answers && currentQuestion.answers.join(', ')}`;
+          response = `👎\n\nAnswer: ${currentQuestion.answers?.join(', ')}`;
           incorrect++;
         }
       } else {
-        response = `Answer: ${currentQuestion.answers && currentQuestion.answers.join(', ')}`;
+        response = `Answer: ${currentQuestion.answers?.join(', ')}`;
         incorrect++;
       }
 

@@ -18,10 +18,14 @@
   "homepage": "https://github.com/tonguebender/tonguebedner-lambdas#readme",
   "dependencies": {
     "@types/aws-lambda": "^8.10.39",
+    "@types/jest": "^24.0.25",
     "aws-sdk": "^2.596.0",
+    "aws-sdk-mock": "^5.0.0",
+    "jest": "^24.9.0",
     "serverless": "^1.60.4",
     "serverless-dynamodb-local": "^0.2.38",
     "telegraf": "^3.34.1",
+    "ts-jest": "^24.3.0",
     "uuid": "^3.3.3"
   },
   "devDependencies": {

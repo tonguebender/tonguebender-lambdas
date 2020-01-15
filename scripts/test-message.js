@@ -2,40 +2,40 @@ const axios = require('axios');
 
 const HOST = 'http://localhost:3000';
 const SEND_MSG_PATH = '/v2/functions/tongue-bender-dev-sqsIncomingMessages/invocations';
+const SQS_ACTION_PATH = '/v2/functions/tongue-bender-dev-sqsActions/invocations';
 const OUTGOING_MSG_PATH = '/v2/functions/tongue-bender-dev-sqsOutgoingMessages/invocations';
 const NEXT_TASK_PATH = '/v2/functions/tongue-bender-dev-sqsShortDelayTasks/invocations';
 const TICK_PATH = '/v2/functions/tongue-bender-dev-tick/invocations';
 
 const getMessage = (text) => ({
-  agent: 'telegram',
-  chatId: 126498435,
-  text,
-  data: {
-    update_id: 399068016,
-    message: {
-      message_id: 4871,
-      from: {
-        id: 126498435,
-        is_bot: false,
-        first_name: 'Sergey',
-        last_name: 'Maximov',
-        username: 'dosyara',
-        language_code: 'en',
-      },
-      chat: { id: 126498435, first_name: 'Sergey', last_name: 'Maximov', username: 'dosyara', type: 'private' },
-      date: 1577294713,
-      text: 'blah',
+  update_id: 399068016,
+  message: {
+    message_id: 4871,
+    from: {
+      id: 126498435,
+      is_bot: false,
+      first_name: 'Sergey',
+      last_name: 'Maximov',
+      username: 'dosyara',
+      language_code: 'en',
     },
+    chat: { id: 126498435, first_name: 'Sergey', last_name: 'Maximov', username: 'dosyara', type: 'private' },
+    date: 1577294713,
+    text,
   },
 });
 
 const sendMessage = (text) => {
   console.log('SEND:', text);
 
-  return axios.post(`${HOST}${SEND_MSG_PATH}`, {
+  return axios.post(`${HOST}${SQS_ACTION_PATH}`, {
     Records: [
       {
-        body: JSON.stringify(getMessage(text)),
+        body: JSON.stringify({
+          type: 'REPLY_TO',
+          chatId: 126498435,
+          data: getMessage(text),
+        }),
       },
     ],
   });
@@ -62,11 +62,12 @@ const sendTelegramMessage = (text, buttons) => {
 const nextTask = () => {
   console.log('NEXT_TASK');
 
-  return axios.post(`${HOST}${NEXT_TASK_PATH}`, {
+  return axios.post(`${HOST}${SQS_ACTION_PATH}`, {
     Records: [
       {
         body: JSON.stringify({
-          userId: 'telegram_126498435',
+          type: 'NEXT',
+          chatId: 126498435,
         }),
       },
     ],

@@ -17,15 +17,6 @@ provider:
       Action:
         - 'sqs:SendMessage'
         - 'sqs:GetQueueUrl'
-      Resource: 'arn:aws:sqs:eu-west-2:035313854880:incoming-messages'
-    - Effect: 'Allow'
-      Action:
-        - 'sqs:ListQueues'
-      Resource: 'arn:aws:sqs:eu-west-2:035313854880:incoming-messages:*'
-    - Effect: 'Allow'
-      Action:
-        - 'sqs:SendMessage'
-        - 'sqs:GetQueueUrl'
       Resource: 'arn:aws:sqs:eu-west-2:035313854880:outgoing-messages.fifo'
     - Effect: 'Allow'
       Action:
@@ -35,11 +26,11 @@ provider:
       Action:
         - 'sqs:SendMessage'
         - 'sqs:GetQueueUrl'
-      Resource: 'arn:aws:sqs:eu-west-2:035313854880:short-delay-tasks'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:actions.fifo'
     - Effect: 'Allow'
       Action:
         - 'sqs:ListQueues'
-      Resource: 'arn:aws:sqs:eu-west-2:035313854880:short-delay-tasks'
+      Resource: 'arn:aws:sqs:eu-west-2:035313854880:actions.fifo:*'
     - Effect: Allow
       Action:
         - dynamodb:Query
@@ -164,20 +155,15 @@ functions:
       - http: ANY /
       - http: 'ANY {proxy+}'
 
-  sqsIncomingMessages:
-    handler: handler.sqsIncomingMessages
+  sqsActions:
+    handler: handler.sqsActions
     events:
-      - sqs: arn:aws:sqs:eu-west-2:035313854880:incoming-messages
+      - sqs: arn:aws:sqs:eu-west-2:035313854880:actions.fifo
 
   sqsOutgoingMessages:
     handler: handler.sqsOutgoingMessages
     events:
       - sqs: arn:aws:sqs:eu-west-2:035313854880:outgoing-messages.fifo
-
-  sqsShortDelayTasks:
-    handler: handler.sqsShortDelayTasks
-    events:
-      - sqs: arn:aws:sqs:eu-west-2:035313854880:short-delay-tasks
 
   tick:
     handler: handler.tick

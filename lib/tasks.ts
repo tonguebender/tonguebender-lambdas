@@ -2,7 +2,7 @@ import { updateUserTasks, User } from './users';
 import { getCourse } from './courses';
 import { getQuiz, IQuizItem } from './quizzes';
 import { putMessage } from './messages';
-import { putTask } from './short-delay-tasks';
+import { ACTIONS, putAction } from './actions';
 
 export interface ITask {
   type: string;
@@ -31,9 +31,10 @@ export enum TASKS {
   STOP_QUIZ = 'STOP_QUIZ',
 }
 
-const executeNextTask = async (user: User, message: string) => {
+export const executeNextTask = async (user: User, message?: string) => {
   const currentTask: IUserTask = user.tasks[0];
   const taskType = currentTask?.type;
+  const { chatId } = user;
 
   switch (taskType) {
     case TASKS.START_COURSE: {
@@ -53,7 +54,7 @@ const executeNextTask = async (user: User, message: string) => {
         ],
       });
 
-      return putMessage({ chatId: user.chatId, text: response });
+      return putMessage({ chatId, text: response });
     }
     case TASKS.COURSE_ITEM: {
       const { courseId, pos } = currentTask as ICourseTask;
@@ -85,10 +86,10 @@ const executeNextTask = async (user: User, message: string) => {
           ],
         });
 
-        await putTask({ userId: user.id });
+        await putAction({ type: ACTIONS.NEXT, chatId });
       }
 
-      return putMessage({ chatId: user.chatId, text: item.text });
+      return putMessage({ chatId, text: item.text });
     }
     case TASKS.STOP_COURSE: {
       const { courseId } = currentTask as ICourseTask;
@@ -100,7 +101,7 @@ const executeNextTask = async (user: User, message: string) => {
         tasks: [...user.tasks.splice(1)],
       });
 
-      return putMessage({ chatId: user.chatId, text: response });
+      return putMessage({ chatId, text: response });
     }
     case TASKS.START_QUIZ: {
       const { quizId } = currentTask as IQuizTask;
@@ -121,9 +122,9 @@ const executeNextTask = async (user: User, message: string) => {
         ],
       });
 
-      await putTask({ userId: user.id });
+      await putAction({ type: ACTIONS.NEXT, chatId });
 
-      return putMessage({ chatId: user.chatId, text: response });
+      return putMessage({ chatId, text: response });
     }
     case TASKS.STOP_QUIZ: {
       const { quizId } = currentTask as IQuizTask;
@@ -135,7 +136,7 @@ const executeNextTask = async (user: User, message: string) => {
         tasks: [...user.tasks.splice(1)],
       });
 
-      return putMessage({ chatId: user.chatId, text: response });
+      return putMessage({ chatId, text: response });
     }
     case TASKS.QUIZ_ITEM: {
       const { quizId, quizItems, correct, incorrect } = currentTask as IQuizTask;
@@ -186,10 +187,10 @@ const executeNextTask = async (user: User, message: string) => {
           ],
         });
 
-        await putTask({ userId: user.id });
+        await putAction({ type: ACTIONS.NEXT, chatId });
       }
 
-      return putMessage({ chatId: user.chatId, text: response || '', data: { buttons } });
+      return putMessage({ chatId, text: response || '', data: { buttons } });
     }
     case TASKS.QUIZ_CHECK_ANSWER: {
       const { quizId, quizItems } = currentTask as IQuizTask;
@@ -224,17 +225,12 @@ const executeNextTask = async (user: User, message: string) => {
         ],
       });
 
-      await putTask({ userId: user.id });
+      await putAction({ type: ACTIONS.NEXT, chatId });
 
-      return putMessage({ chatId: user.chatId, text: response });
+      return putMessage({ chatId, text: response });
     }
     default: {
       console.log('UNKNOWN TASK', currentTask);
     }
   }
-};
-
-module.exports = {
-  TASKS,
-  executeNextTask,
 };

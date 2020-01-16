@@ -61,6 +61,22 @@ export const convertMessageToAction = (update: ITelegramUpdate): IAction => {
           word: parts[1],
         },
       };
+    case 'synonym':
+      return {
+        type: ACTIONS.SYNONYMS,
+        chatId,
+        data: {
+          word: parts[1],
+        },
+      };
+    case 'ipa':
+      return {
+        type: ACTIONS.IPA,
+        chatId,
+        data: {
+          word: parts[1],
+        },
+      };
     default:
       return {
         type: ACTIONS.REPLY_TO,

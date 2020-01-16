@@ -31,11 +31,11 @@ export enum ACTIONS {
   START_QUIZ = 'START_QUIZ',
   REPLY_TO = 'REPLY_TO',
   DEFINE = 'DEFINE',
+  SYNONYMS = 'SYNONYMS',
+  IPA = 'IPA',
 
   // todo
   STOP = 'STOP',
-  SYNONYMS = 'SYNONYMS',
-  IPA = 'IPA',
 }
 
 export const putAction = async (action: IAction) => {
@@ -112,13 +112,47 @@ export const processAction = async (action: IAction): Promise<any> => {
     case ACTIONS.DEFINE: {
       const { chatId, data } = action;
       const def = await getDefinition(data.word);
-      const defs = def.def;
       let response;
 
-      if (defs && defs.length) {
-        response = `**${def.pk}** _[${def.ipa}]_\n${defs
+      if (def && def.def) {
+        response = `**${def.pk}** _[${def.ipa}]_\n${def.def
           .map((d) => `- (${d.speech_part}) ${d.def}${d.example ? `\n_${d.example}_` : ''}`)
           .join('\n')}`;
+      } else {
+        response = 'Not found';
+      }
+
+      return putMessage({
+        chatId,
+        text: response,
+      });
+    }
+    case ACTIONS.SYNONYMS: {
+      const { chatId, data } = action;
+      const def = await getDefinition(data.word);
+      let response;
+
+      if (def && def.def) {
+        response = `**${def.pk}**${def.ipa ? ` [${def.ipa}]` : ''}\n${def.def
+          .map((d) => (d.synonyms || []).join(', '))
+          .filter((s) => s.length)
+          .join(';\n')}`;
+      } else {
+        response = 'Not found';
+      }
+
+      return putMessage({
+        chatId,
+        text: response,
+      });
+    }
+    case ACTIONS.IPA: {
+      const { chatId, data } = action;
+      const def = await getDefinition(data.word);
+      let response;
+
+      if (def && def.ipa) {
+        response = `_${def.ipa}_`;
       } else {
         response = 'Not found';
       }

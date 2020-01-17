@@ -3,7 +3,7 @@ import { createUser, getUser, updateUserTasks } from './users';
 import { putMessage } from './messages';
 import { getQuizzes } from './quizzes';
 import { getDefinition } from './tongues';
-import { TASKS, executeNextTask } from './tasks';
+import { executeNextTask, IQuizTask, IUserTask, TASKS } from './tasks';
 import { convertMessageToAction } from './handlers/hook-telegram';
 
 AWS.config.update({ region: 'eu-west-2' });
@@ -33,8 +33,6 @@ export enum ACTIONS {
   DEFINE = 'DEFINE',
   SYNONYMS = 'SYNONYMS',
   IPA = 'IPA',
-
-  // todo
   STOP = 'STOP',
 }
 
@@ -89,6 +87,30 @@ export const processAction = async (action: IAction): Promise<any> => {
       const user = await getUser(`telegram_${chatId}`);
 
       return await executeNextTask(user);
+    }
+    case ACTIONS.STOP: {
+      const { chatId } = action;
+      const user = await getUser(`telegram_${chatId}`);
+      const currentTask: IUserTask = user.tasks[0];
+
+      if (currentTask.type === TASKS.QUIZ_ITEM || currentTask.type === TASKS.QUIZ_CHECK_ANSWER) {
+        await updateUserTasks({
+          id: user.id,
+          tasks: [
+            {
+              type: TASKS.STOP_QUIZ,
+              quizId: (currentTask as IQuizTask).quizId,
+            },
+            ...user.tasks.splice(1),
+          ],
+        });
+
+        return putAction({ type: ACTIONS.NEXT, chatId });
+      } else if (currentTask.type === TASKS.COURSE_ITEM) {
+        // todo
+      }
+
+      return;
     }
     case ACTIONS.START_QUIZ: {
       const { chatId } = action;

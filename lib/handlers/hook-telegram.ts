@@ -48,6 +48,11 @@ export const convertMessageToAction = (update: ITelegramUpdate): IAction => {
         type: ACTIONS.NEXT,
         chatId,
       };
+    case 'stop':
+      return {
+        type: ACTIONS.STOP,
+        chatId,
+      };
     case 'quiz':
       return {
         type: ACTIONS.START_QUIZ,

@@ -98,7 +98,7 @@ async function test() {
   await nextTask();
   await sendMessage('4');
   await nextTask();
-  await sendMessage('E');
+  await sendMessage('stop');
   await nextTask();
   await nextTask();
   await nextTask();

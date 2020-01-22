@@ -2,6 +2,7 @@ import * as AWS from 'aws-sdk';
 import { createUser, getUser, updateUserTasks } from './users';
 import { putMessage } from './messages';
 import { getQuizzes } from './quizzes';
+import { getCourses } from './courses';
 import { getDefinition } from './tongues';
 import { executeNextTask, IQuizTask, IUserTask, TASKS } from './tasks';
 import { convertMessageToAction } from './handlers/hook-telegram';
@@ -34,6 +35,8 @@ export enum ACTIONS {
   SYNONYMS = 'SYNONYMS',
   IPA = 'IPA',
   STOP = 'STOP',
+  COURSES = 'COURSES',
+  SUBSCRIBE = 'SUBSCRIBE',
 }
 
 export const putAction = async (action: IAction) => {
@@ -76,6 +79,44 @@ export const processAction = async (action: IAction): Promise<any> => {
     case ACTIONS.SAY_HI: {
       const { chatId } = action;
       const response = `Hi!`;
+
+      return putMessage({
+        chatId,
+        text: response,
+      });
+    }
+    case ACTIONS.COURSES: {
+      const { chatId } = action;
+      const user = await getUser(`telegram_${chatId}`);
+      const courses = await getCourses();
+      const data = courses.reduce((res, c, i) => ({ ...res, [i + 1]: c.id }), {});
+      const response = `Courses:\n${courses
+        .map((c, i) => `${i + 1}. ${c.title}`)
+        .join('\n')}\nWhich course do you want to subscribe to?`;
+
+      await updateUserTasks({
+        id: user.id,
+        tasks: [
+          {
+            type: TASKS.SUBSCRIBE_TO_COURSE,
+            data,
+          },
+          ...user.tasks,
+        ],
+      });
+
+      return putMessage({
+        chatId,
+        text: response,
+        data: {
+          buttons: Object.keys(data),
+        },
+      });
+    }
+    case ACTIONS.SUBSCRIBE: {
+      const { chatId } = action;
+      const courses = await getCourses();
+      const response = `Courses:\n${courses.map((c, i) => `${i + 1}. ${c.title}`).join('\n')}`;
 
       return putMessage({
         chatId,
@@ -174,7 +215,7 @@ export const processAction = async (action: IAction): Promise<any> => {
       let response;
 
       if (def && def.ipa) {
-        response = `_${def.ipa}_`;
+        response = `**${def.pk}** [${def.ipa}]`;
       } else {
         response = 'Not found';
       }
@@ -197,13 +238,13 @@ export const processAction = async (action: IAction): Promise<any> => {
         const currentTask = user?.tasks[0];
         const type = currentTask?.type;
 
-        if (type === TASKS.QUIZ_CHECK_ANSWER) {
+        if (type === TASKS.QUIZ_CHECK_ANSWER || type === TASKS.SUBSCRIBE_TO_COURSE) {
           return await executeNextTask(user, data.message.text);
         }
 
         return putMessage({
           chatId,
-          text: 'I do not know how to help with that',
+          text: 'I do not know how to help with that.',
         });
       }
     }

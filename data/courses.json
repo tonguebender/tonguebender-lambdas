@@ -6,11 +6,26 @@
     "items": [
       {
         "type": "text",
-        "text": "item1"
+        "text": "item1.1"
       },
       {
         "type": "text",
-        "text": "item1"
+        "text": "item1.2"
+      }
+    ]
+  },
+  {
+    "title": "title 2",
+    "description": "sample 2",
+    "id": "course-2",
+    "items": [
+      {
+        "type": "text",
+        "text": "item2.1"
+      },
+      {
+        "type": "text",
+        "text": "item2.2"
       }
     ]
   }

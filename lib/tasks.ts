@@ -8,7 +8,8 @@ export interface ITask {
   type: string;
 }
 export interface ICourseTask extends ITask {
-  type: TASKS.COURSE_ITEM | TASKS.START_COURSE | TASKS.STOP_COURSE;
+  type: TASKS.COURSE_ITEM | TASKS.START_COURSE | TASKS.STOP_COURSE | TASKS.SUBSCRIBE_TO_COURSE;
+  data?: any;
   courseId: string;
   pos: number;
 }
@@ -22,6 +23,7 @@ export interface IQuizTask extends ITask {
 export type IUserTask = ICourseTask | IQuizTask | ITask;
 
 export enum TASKS {
+  SUBSCRIBE_TO_COURSE = 'SUBSCRIBE_TO_COURSE',
   START_COURSE = 'START_COURSE',
   COURSE_ITEM = 'COURSE_ITEM',
   STOP_COURSE = 'STOP_COURSE',
@@ -37,6 +39,36 @@ export const executeNextTask = async (user: User, message?: string) => {
   const { chatId } = user;
 
   switch (taskType) {
+    case TASKS.SUBSCRIBE_TO_COURSE: {
+      const { data } = currentTask as ICourseTask;
+      const courseId = message && data[message];
+      let response;
+
+      if (courseId) {
+        await updateUserTasks({
+          id: user.id,
+          tasks: [
+            {
+              type: TASKS.START_COURSE,
+              courseId: courseId,
+              pos: 0,
+            },
+            ...user.tasks.splice(1),
+          ],
+        });
+
+        response = 'ok';
+      } else {
+        await updateUserTasks({
+          id: user.id,
+          tasks: [...user.tasks.splice(1)],
+        });
+
+        response = 'Not found';
+      }
+
+      return putMessage({ chatId, text: response });
+    }
     case TASKS.START_COURSE: {
       const { courseId } = currentTask as ICourseTask;
       const course = await getCourse(courseId);

@@ -92,19 +92,26 @@ async function test() {
   // await nextTask();
   // await nextTask();
 
-  await sendMessage('quiz');
+  await sendMessage('courses');
+  await sendMessage('qw');
   await nextTask();
   await nextTask();
   await nextTask();
-  await sendMessage('4');
-  await nextTask();
-  await sendMessage('stop');
-  await nextTask();
-  await nextTask();
-  await nextTask();
-  await nextTask();
-  await nextTask();
-  await sendMessage('define anus');
+
+
+  // await sendMessage('quiz');
+  // await nextTask();
+  // await nextTask();
+  // await nextTask();
+  // await sendMessage('4');
+  // await nextTask();
+  // await sendMessage('stop');
+  // await nextTask();
+  // await nextTask();
+  // await nextTask();
+  // await nextTask();
+  // await nextTask();
+  // await sendMessage('define anus');
 }
 
 test();

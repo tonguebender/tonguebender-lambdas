@@ -42,6 +42,7 @@ export const getQuizzes = async (): Promise<IQuiz[]> => {
   const doc = await docClient
     .scan({
       TableName: 'quizzes',
+      Limit: 10,
     })
     .promise();
 

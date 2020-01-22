@@ -53,12 +53,18 @@ export const convertMessageToAction = (update: ITelegramUpdate): IAction => {
         type: ACTIONS.STOP,
         chatId,
       };
+    case 'courses':
+      return {
+        type: ACTIONS.COURSES,
+        chatId,
+      };
     case 'quiz':
       return {
         type: ACTIONS.START_QUIZ,
         chatId,
       };
     case 'define':
+    case 'definition':
       return {
         type: ACTIONS.DEFINE,
         chatId,
@@ -67,6 +73,7 @@ export const convertMessageToAction = (update: ITelegramUpdate): IAction => {
         },
       };
     case 'synonym':
+    case 'synonyms':
       return {
         type: ACTIONS.SYNONYMS,
         chatId,

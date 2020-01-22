@@ -34,3 +34,14 @@ export const getCourse = async (id: string): Promise<ICourse> => {
 
   return doc.Item as ICourse;
 };
+
+export const getCourses = async (): Promise<ICourse[]> => {
+  const doc = await docClient
+    .scan({
+      TableName: 'courses',
+      Limit: 10,
+    })
+    .promise();
+
+  return doc.Items as ICourse[];
+};

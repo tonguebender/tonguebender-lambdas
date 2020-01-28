@@ -39,11 +39,19 @@ export enum ACTIONS {
   SUBSCRIBE = 'SUBSCRIBE',
 }
 
-export const putAction = async (action: IAction) => {
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}
+
+export const putAction = async (action: IAction, delayMs = 1000) => {
   if (IS_OFFLINE) {
     console.log(`ACTION ${action.type} to ${action.chatId}`);
     return Promise.resolve();
   }
+
+  await delay(delayMs);
 
   return sqs
     .sendMessage({
@@ -178,7 +186,7 @@ export const processAction = async (action: IAction): Promise<any> => {
       let response;
 
       if (def && def.def) {
-        response = `**${def.pk}** _[${def.ipa}]_\n${def.def
+        response = `*${def.pk}* _[${def.ipa}]_\n${def.def
           .map((d) => `- (${d.speech_part}) ${d.def}${d.example ? `\n_${d.example}_` : ''}`)
           .join('\n')}`;
       } else {
@@ -196,7 +204,7 @@ export const processAction = async (action: IAction): Promise<any> => {
       let response;
 
       if (def && def.def) {
-        response = `**${def.pk}**${def.ipa ? ` [${def.ipa}]` : ''}\n${def.def
+        response = `**${def.pk}**${def.ipa ? ` _[${def.ipa}]_` : ''}\n${def.def
           .map((d) => (d.synonyms || []).join(', '))
           .filter((s) => s.length)
           .join(';\n')}`;
@@ -215,7 +223,7 @@ export const processAction = async (action: IAction): Promise<any> => {
       let response;
 
       if (def && def.ipa) {
-        response = `**${def.pk}** [${def.ipa}]`;
+        response = `**${def.pk}** _[${def.ipa}]_`;
       } else {
         response = 'Not found';
       }

@@ -3,7 +3,7 @@ import { createUser, getUser, updateUserTasks } from './users';
 import { putMessage } from './messages';
 import { getQuizzes } from './quizzes';
 import { getCourses } from './courses';
-import { getDefinition } from './tongues';
+import { getDefinition, getIrregularForms } from './tongues';
 import { executeNextTask, IQuizTask, IUserTask, TASKS } from './tasks';
 import { convertMessageToAction } from './handlers/hook-telegram';
 
@@ -34,6 +34,7 @@ export enum ACTIONS {
   DEFINE = 'DEFINE',
   SYNONYMS = 'SYNONYMS',
   IPA = 'IPA',
+  IRREGULAR_FORMS = 'IRREGULAR_FORMS',
   STOP = 'STOP',
   COURSES = 'COURSES',
   SUBSCRIBE = 'SUBSCRIBE',
@@ -204,7 +205,7 @@ export const processAction = async (action: IAction): Promise<any> => {
       let response;
 
       if (def && def.def) {
-        response = `**${def.pk}**${def.ipa ? ` _[${def.ipa}]_` : ''}\n${def.def
+        response = `*${def.pk}*${def.ipa ? ` _[${def.ipa}]_` : ''}\n${def.def
           .map((d) => (d.synonyms || []).join(', '))
           .filter((s) => s.length)
           .join(';\n')}`;
@@ -223,7 +224,23 @@ export const processAction = async (action: IAction): Promise<any> => {
       let response;
 
       if (def && def.ipa) {
-        response = `**${def.pk}** _[${def.ipa}]_`;
+        response = `*${def.pk}* _[${def.ipa}]_`;
+      } else {
+        response = 'Not found';
+      }
+
+      return putMessage({
+        chatId,
+        text: response,
+      });
+    }
+    case ACTIONS.IRREGULAR_FORMS: {
+      const { chatId, data } = action;
+      const def = await getIrregularForms(data.word);
+      let response;
+
+      if (def) {
+        response = `*${def.pk}* ${def.pastSimple} ${def.pastParticiple} ${def.comment ? `\n_${def.comment}_` : ''}`;
       } else {
         response = 'Not found';
       }

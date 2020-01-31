@@ -89,6 +89,14 @@ export const convertMessageToAction = (update: ITelegramUpdate): IAction => {
           word: parts[1],
         },
       };
+    case 'forms':
+      return {
+        type: ACTIONS.IRREGULAR_FORMS,
+        chatId,
+        data: {
+          word: parts[1],
+        },
+      };
     default:
       return {
         type: ACTIONS.REPLY_TO,

@@ -169,4 +169,4 @@ functions:
   tick:
     handler: handler.tick
     events:
-      - schedule: rate(10 minutes)
+      - schedule: rate(2 minutes)

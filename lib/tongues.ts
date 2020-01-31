@@ -20,6 +20,13 @@ interface IDefinition {
   def: IMeaning[];
 }
 
+interface IIrregularForms {
+  pk: string;
+  pastSimple: string;
+  pastParticiple: string;
+  comment: string;
+}
+
 interface IMeaning {
   word: string;
   def: string;
@@ -37,4 +44,15 @@ export const getDefinition = async (word: string): Promise<IDefinition> => {
     .promise();
 
   return doc.Item as IDefinition;
+};
+
+export const getIrregularForms = async (word: string): Promise<IIrregularForms> => {
+  const doc = await docClient
+    .get({
+      TableName: 'tongues',
+      Key: { pk: word, sk: 'en-irregular-verbs' },
+    })
+    .promise();
+
+  return doc.Item as IIrregularForms;
 };
